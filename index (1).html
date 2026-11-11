@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>TGS Platform Genesis 2.0</title>
+
+  <!-- PWA & Mobile App Icons -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1565C0">
+
+  <!-- iOS Safari -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TGS Survey">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="shortcut icon" href="icon-192.png">
+
+  <!-- GIS Leaflet & CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- JSQR Thư viện nhận diện mã QR -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ======================================================================= -->
+  <!-- PHÂN HỆ 0: XÁC THỰC GMAIL NỘI BỘ (screenAuth) -->
+  <!-- ======================================================================= -->
+  <section id="screenAuth" class="screen active" style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0f172a; padding: 20px;">
+    <div style="background: #ffffff; border-radius: 16px; width: 100%; max-width: 380px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="width: 50px; height: 50px; background: #0284c7; color: #fff; font-size: 22px; font-weight: bold; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px;">TGS</div>
+        <h2 style="margin: 0; font-size: 20px; color: #0f172a;">TGS Survey System</h2>
+        <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Hạ tầng Cấp nước Nông thôn</p>
+      </div>
+
+      <div style="display: flex; background: #f1f5f9; border-radius: 8px; padding: 4px; margin-bottom: 16px;">
+        <button id="tabBtnLogin" style="flex: 1; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 13px; background: #0284c7; color: #fff; cursor: pointer;">Đăng Nhập</button>
+        <button id="tabBtnRegister" style="flex: 1; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 13px; background: transparent; color: #64748b; cursor: pointer;">Đăng Ký</button>
+      </div>
+
+      <form id="formLogin" onsubmit="event.preventDefault(); TGS_Auth.handleLogin();">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Gmail công việc / cá nhân</label>
+        <input type="email" id="loginEmail" required placeholder="vidu@gmail.com" style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; margin-bottom: 12px; box-sizing: border-box;">
+
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Mật khẩu</label>
+        <input type="password" id="loginPass" required placeholder="Nhập mật khẩu" style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; margin-bottom: 16px; box-sizing: border-box;">
+
+        <button type="submit" class="btn btn-primary btn-block" style="height: 42px; font-size: 14px;">Đăng Nhập Vào Hệ Thống</button>
+      </form>
+
+      <form id="formRegister" style="display: none;" onsubmit="event.preventDefault(); TGS_Auth.handleRegister();">
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Họ và tên cán bộ</label>
+        <input type="text" id="regFullName" required placeholder="VD: Nguyễn Văn A" style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box;">
+
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Gmail đăng ký</label>
+        <input type="email" id="regEmail" required placeholder="vidu@gmail.com" style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box;">
+
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Phòng ban / Đơn vị</label>
+        <input type="text" id="regDept" required value="Phòng Quản lý Khai thác" style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box;">
+
+        <label style="display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 4px;">Mật khẩu tự chọn</label>
+        <input type="password" id="regPass" required placeholder="Tạo mật khẩu" style="width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0 10px; font-size: 13px; margin-bottom: 16px; box-sizing: border-box;">
+
+        <button type="submit" class="btn btn-secondary btn-block" style="height: 42px; font-size: 14px;">Gửi Yêu Cầu Đăng Ký</button>
+      </form>
+
+      <div id="authNotice" style="margin-top: 12px; font-size: 12px; text-align: center; color: #e11d48; min-height: 18px;"></div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH 1: DASHBOARD TRUNG TÂM (tab-dashboard) -->
+  <!-- ======================================================================= -->
+  <section id="tab-dashboard" class="screen" style="display:none;">
+    <header class="topbar">
+      <div class="brand"><strong>TGS</strong><span>Survey</span></div>
+      <div class="version">Genesis 2.0</div>
+    </header>
+
+    <div class="page">
+      <div class="status-card" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #fff; margin-bottom: 14px;">
+        <div style="font-size: 13px; opacity: 0.9;">Xin chào kỹ sư,</div>
+        <h2 id="dashUserName" style="margin: 2px 0 6px; font-size: 18px;">Kim Minh Hùng</h2>
+        <div id="dashUserDept" style="font-size: 12px; opacity: 0.85;">Phòng Quản lý Khai thác</div>
+      </div>
+
+      <div class="status-card" style="margin-bottom: 14px;">
+        <div class="status-row">
+          <span>Công trình lưu trữ Offline</span>
+          <strong id="dashTotalProjects">0 hồ sơ</strong>
+        </div>
+        <div class="status-row">
+          <span>Trạng thái bộ lọc GNSS</span>
+          <strong style="color: #16a34a;">Smart 20/20 Sẵn sàng</strong>
+        </div>
+      </div>
+
+      <div id="draftBanner" class="draft-banner hidden">
+        <div>
+          <strong>Công trình đang làm dở dang:</strong>
+          <p id="draftProjectInfo">Tiếp tục khảo sát hoặc tạo công trình mới.</p>
+        </div>
+        <button id="btnContinueDraft" class="btn-secondary" style="white-space:nowrap;">Tiếp tục</button>
+      </div>
+
+      <div class="card-action" id="btnNewProject">
+        <div class="icon">＋</div>
+        <div>
+          <h3>Bắt đầu cuộc khảo sát mới</h3>
+          <p>Tạo hồ sơ trạm, mạng lưới tuyến ống mới</p>
+        </div>
+      </div>
+
+      <div class="card-action" id="btnOpenProject" onclick="TGS.Navigation.show('tab-data');">
+        <div class="icon">▣</div>
+        <div>
+          <h3>Mở công trình đã lưu</h3>
+          <p>Xem, hậu kiểm và tiếp tục khảo sát thực địa</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<!-- FORM TẠO CÔNG TRÌNH (screenProject) -->
+  <section id="screenProject" class="screen" style="display:none;">
+    <header class="nav-header">
+      <button id="btnBackHome" class="back-btn">←</button>
+      <div>
+        <h2>Tạo hồ sơ trạm / công trình</h2>
+        <p>Cơ sở dữ liệu số & Quản lý tài sản</p>
+      </div>
+    </header>
+
+    <div class="form-page">
+      <label>1. Tên công trình / Trạm cấp nước:</label>
+      <input id="projectName" type="text" placeholder="VD: Trạm cấp nước Thới Hòa">
+
+      <label>2. Mã số trạm (Mã GIS tỉnh):</label>
+      <input id="projectCode" type="text" placeholder="VD: TGS-TH-001">
+
+      <!-- ĐỊA BÀN HÀNH CHÍNH (XÃ/PHƯỜNG & ẤP/KHÓM) -->
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <div style="flex:1;">
+          <label style="margin-top:8px;">Xã / Phường:</label>
+          <input id="projectCommune" type="text" placeholder="VD: Xã Thới Hòa">
+        </div>
+        <div style="flex:1;">
+          <label style="margin-top:8px;">Ấp / Khóm:</label>
+          <input id="projectHamlet" type="text" placeholder="VD: Ấp Tích Phước">
+        </div>
+      </div>
+
+      <label style="margin-top:10px;">Địa chỉ chi tiết / Vị trí mốc:</label>
+      <input id="projectLocation" type="text" placeholder="VD: Đường đan Kênh Ranh, Ấp Tích Phước">
+
+      <!-- QUẢN LÝ TÀI SẢN THEO CHUẨN CSDL SỞ / TỈNH -->
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <div style="flex:1;">
+          <label style="margin-top:8px;">Công suất (m³/ngđ):</label>
+          <input id="projectCapacity" type="number" placeholder="VD: 480">
+        </div>
+        <div style="flex:1;">
+          <label style="margin-top:8px;">Năm vận hành:</label>
+          <input id="projectYear" type="number" placeholder="VD: 2007">
+        </div>
+      </div>
+
+      <label style="margin-top:10px;">Cán bộ quản lý vận hành trạm:</label>
+      <input id="projectManager" type="text" placeholder="Họ tên cán bộ quản lý trạm (SĐT)">
+
+      <button id="btnCreateProject" class="btn-primary" style="margin-top: 18px;">Vào khảo sát</button>
+    </div>
+  </section>
+
+  <!-- TRUNG TÂM ĐIỀU HÀNH KHẢO SÁT (screenSurveyHome) -->
+  <section id="screenSurveyHome" class="screen" style="display:none;">
+    <header class="nav-header">
+      <button id="btnBackProject" class="back-btn">←</button>
+      <div>
+        <h2 id="surveyProjectTitle">Công trình</h2>
+        <p id="surveyProjectSubtitle">Trung tâm tác nghiệp</p>
+      </div>
+    </header>
+
+    <div class="survey-home">
+      <div id="btnLinearSurvey" class="survey-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>Khảo sát tuyến ống</h3>
+          <span id="badgeLinearSummary" class="badge-mini">0 điểm · 0 m</span>
+        </div>
+        <p>Breadcrumb bám đường cong · Bóc tách ống Trái/Phải · Đổi tiết diện</p>
+      </div>
+
+      <div id="btnPointSurvey" class="survey-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>Khảo sát hạng mục trạm</h3>
+          <span id="badgePointSummary" class="badge-mini">0 đối tượng</span>
+        </div>
+        <p>Ngữ cảnh kỹ thuật · Bộ lọc 20 mẫu · Chụp Watermark & Video</p>
+      </div>
+      
+      <!-- THẺ 3: KHẢO SÁT ĐỒNG HỒ KHÁCH HÀNG (MỚI) -->
+      <div id="btnCustomerMeterSurvey" class="survey-card" style="border-left: 5px solid #8b5cf6;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="color:#6d28d9;">Khảo sát đồng hồ khách hàng</h3>
+          <span id="badgeMeterSummary" class="badge-mini">0 hộ</span>
+        </div>
+        <p>Thu thập tọa độ hộp đồng hồ · Mã danh bạ KH · Chụp ảnh đối soát CSDL tỉnh</p>
+      </div>
+      
+      <div id="btnFinishProject" class="survey-card" style="border: 2px dashed #0284c7;">
+        <h3>Kết thúc & Đóng gói hồ sơ</h3>
+        <p>Khóa số liệu · Đẩy vào phân hệ Dữ liệu để đồng bộ</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH 2A: KHẢO SÁT TUYẾN ỐNG (screenLinear) -->
+  <!-- ======================================================================= -->
+  <section id="screenLinear" class="screen" style="display:none;">
+    <header class="survey-header-floating">
+      <button id="btnExitLinear" class="back-btn-floating">←</button>
+      <div class="floating-header-info">
+        <strong id="linearProjectName">Khảo sát tuyến</strong>
+        <span id="gpsText">Đang kích hoạt GNSS...</span>
+      </div>
+    </header>
+
+    <div class="map-wrapper-fullscreen">
+      <div id="map"></div>
+
+      <!-- BẢNG BÓC TÁCH ỐNG TRÁI / PHẢI & PHỤ KIỆN ĐẤU NỐI KỸ THUẬT -->
+      <div class="linear-spec-card">
+        <!-- Hàng 1: Quy cách ống Trái / Phải -->
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;">
+            <label style="font-size:11px; font-weight:700; color:#0f172a; display:block; margin-bottom:2px;">Ống Lề TRÁI:</label>
+            <select id="lineLeftDiameter" class="form-select">
+              <optgroup label="--- uPVC (D49 - D280) ---">
+                <option value="NONE">Không có ống</option>
+                <option value="uPVC_D49">D49 uPVC</option>
+                <option value="uPVC_D60" selected>D60 uPVC</option>
+                <option value="uPVC_D90">D90 uPVC</option>
+                <option value="uPVC_D114">D114 uPVC</option>
+                <option value="uPVC_D140">D140 uPVC</option>
+                <option value="uPVC_D168">D168 uPVC</option>
+                <option value="uPVC_D200">D200 uPVC</option>
+                <option value="uPVC_D225">D225 uPVC</option>
+                <option value="uPVC_D250">D250 uPVC</option>
+                <option value="uPVC_D280">D280 uPVC</option>
+              </optgroup>
+              <optgroup label="--- HDPE (D49 - D350) ---">
+                <option value="HDPE_D49">D49 HDPE</option>
+                <option value="HDPE_D63">D63 HDPE</option>
+                <option value="HDPE_D75">D75 HDPE</option>
+                <option value="HDPE_D90">D90 HDPE</option>
+                <option value="HDPE_D110">D110 HDPE</option>
+                <option value="HDPE_D125">D125 HDPE</option>
+                <option value="HDPE_D140">D140 HDPE</option>
+                <option value="HDPE_D160">D160 HDPE</option>
+                <option value="HDPE_D180">D180 HDPE</option>
+                <option value="HDPE_D200">D200 HDPE</option>
+                <option value="HDPE_D225">D225 HDPE</option>
+                <option value="HDPE_D250">D250 HDPE</option>
+                <option value="HDPE_D280">D280 HDPE</option>
+                <option value="HDPE_D315">D315 HDPE</option>
+                <option value="HDPE_D350">D350 HDPE</option>
+              </optgroup>
+              <optgroup label="--- Khác ---">
+                <option value="KHAC">Tự nhập loại khác...</option>
+              </optgroup>
+            </select>
+            <input id="customLeftPipeInput" type="text" placeholder="Nhập quy cách ống..." class="hidden" style="width:100%; height:30px; border:1px solid #0284c7; border-radius:4px; font-size:11.5px; padding:0 6px; margin-top:4px; box-sizing:border-box;">
+          </div>
+
+          <div style="flex:1;">
+            <label style="font-size:11px; font-weight:700; color:#0f172a; display:block; margin-bottom:2px;">Ống Lề PHẢI:</label>
+            <select id="lineRightDiameter" class="form-select">
+              <optgroup label="--- uPVC (D49 - D280) ---">
+                <option value="NONE" selected>Không có ống</option>
+                <option value="uPVC_D49">D49 uPVC</option>
+                <option value="uPVC_D60">D60 uPVC</option>
+                <option value="uPVC_D90">D90 uPVC</option>
+                <option value="uPVC_D114">D114 uPVC</option>
+                <option value="uPVC_D140">D140 uPVC</option>
+                <option value="uPVC_D168">D168 uPVC</option>
+                <option value="uPVC_D200">D200 uPVC</option>
+                <option value="uPVC_D225">D225 uPVC</option>
+                <option value="uPVC_D250">D250 uPVC</option>
+                <option value="uPVC_D280">D280 uPVC</option>
+              </optgroup>
+              <optgroup label="--- HDPE (D49 - D350) ---">
+                <option value="HDPE_D49">D49 HDPE</option>
+                <option value="HDPE_D63">D63 HDPE</option>
+                <option value="HDPE_D75">D75 HDPE</option>
+                <option value="HDPE_D90">D90 HDPE</option>
+                <option value="HDPE_D110">D110 HDPE</option>
+                <option value="HDPE_D125">D125 HDPE</option>
+                <option value="HDPE_D140">D140 HDPE</option>
+                <option value="HDPE_D160">D160 HDPE</option>
+                <option value="HDPE_D180">D180 HDPE</option>
+                <option value="HDPE_D200">D200 HDPE</option>
+                <option value="HDPE_D225">D225 HDPE</option>
+                <option value="HDPE_D250">D250 HDPE</option>
+                <option value="HDPE_D280">D280 HDPE</option>
+                <option value="HDPE_D315">D315 HDPE</option>
+                <option value="HDPE_D350">D350 HDPE</option>
+              </optgroup>
+              <optgroup label="--- Khác ---">
+                <option value="KHAC">Tự nhập loại khác...</option>
+              </optgroup>
+            </select>
+            <input id="customRightPipeInput" type="text" placeholder="Nhập quy cách ống..." class="hidden" style="width:100%; height:30px; border:1px solid #0284c7; border-radius:4px; font-size:11.5px; padding:0 6px; margin-top:4px; box-sizing:border-box;">
+          </div>
+        </div>
+
+        <!-- Hàng 2: Phụ kiện đấu nối -->
+        <div style="display:flex; gap:8px; margin-top:6px; align-items:center;">
+          <div style="flex:1;">
+            <select id="lineFittingSelect" class="form-select" style="background:#f0f9ff; font-weight:600; color:#0369a1; border-color:#0284c7;">
+              <option value="KHONG">-- Không phụ kiện (Đoạn thẳng) --</option>
+              <option value="TE_GIAM">Tê giảm </option>
+              <option value="TE_DEU">Tê đều </option>
+              <option value="NOI_GIAM">Nối giảm / Côn thu </option>
+              <option value="CO_90">Co 90° </option>
+              <option value="LOI_45">Lơi 45° </option>
+              <option value="VAN_CHAN">Van chặn phân phối </option>
+              <option value="BIT_ONG"> Nút Bít </option>
+              <option value="KHAC">Phụ kiện khác...</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <input id="lineFittingNote" type="text" placeholder="Chi tiết: Tê D90/60, Giảm D114/90..." style="width:100%; height:32px; border:1px solid #cbd5e1; border-radius:6px; font-size:11.5px; padding:0 8px; box-sizing:border-box;">
+          </div>
+        </div>
+
+        <!-- Hàng 3: Đổi tiết diện & Trạng thái -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:4px; border-top:1px dashed #e2e8f0;">
+          <button id="btnSwitchSection" class="btn btn-sm btn-outline" style="font-size:11px; padding:3px 8px;">🔄 Chốt đổi quy cách ống</button>
+          <span id="lineBreadcrumbStatus" style="font-size:11px; color:#16a34a; font-weight:600;">● Vết bánh xe đang bám đường</span>
+        </div>
+      </div>
+
+      <!-- Cụm công cụ thực địa bên phải: Camera, Video, GPS, Zoom -->
+      <div class="map-tools-bottom">
+        <button id="btnLineSnapPhoto" class="tool-circle" title="Chụp ảnh điểm tuyến" style="background:#0284c7; color:#fff; border:none;">📷</button>
+        <button id="btnLineRecordVideo" class="tool-circle" title="Quay video thuyết minh tuyến" style="background:#ea580c; color:#fff; border:none;">🎥</button>
+        <button id="btnLocate" class="tool-circle" title="Vị trí hiện tại">◎</button>
+        <button id="btnZoomIn" class="tool-circle">＋</button>
+        <button id="btnZoomOut" class="tool-circle">－</button>
+        
+        <input type="file" id="inputLinePhoto" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" id="inputLineVideo" accept="video/*" capture="environment" style="display:none;">
+      </div>
+
+      <!-- Dải thông số nổi -->
+      <div class="floating-metric-pill">
+        <div><span>Điểm:</span> <strong id="pointCount">0</strong></div>
+        <div><span>Dài thực tế:</span> <strong id="lineLength">0 m</strong></div>
+        <div><span>VN2000:</span> <strong id="vn2000Text">--</strong></div>
+        <div><span>Sai số:</span> <strong id="gpsAccuracy">± -- m</strong></div>
+      </div>
+
+      <!-- Nút Chốt mốc kỹ thuật 20 mẫu vi sai -->
+      <button id="btnCaptureGPS" class="btn-giant-gps">
+        <span id="captureBtnText">◎ CHỐT MỐC KỸ THUẬT (20 MẪU)</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH 2B: KHẢO SÁT ĐIỂM HẠNG MỤC (screenPoint) -->
+  <!-- ======================================================================= -->
+  <section id="screenPoint" class="screen" style="display:none;">
+    <header class="nav-header">
+      <button id="btnExitPoint" class="back-btn">←</button>
+      <div>
+        <h2 id="pointProjectTitle">Tên công trình</h2>
+        <p id="pointProjectSubtitle">Mã công trình · Địa điểm</p>
+      </div>
+    </header>
+
+    <div class="form-page">
+      <div class="card-section" style="background: #f8fafc; border: 1px solid #cbd5e1; margin-bottom: 12px;">
+        <label style="font-weight: 700; color: #0f172a;">1. Tên hạng mục cấu kiện:</label>
+        <select id="pointSectionSelect" class="form-select" style="margin-bottom: 8px;">
+          <option value="Đài nước / Tháp nước BTCT">Đài nước / Tháp nước BTCT</option>
+          <option value="Bồn lắng tiếp xúc dòng chảy ngược">Bồn lắng tiếp xúc dòng chảy ngược</option>
+          <option value="Bồn lọc cát trọng lực / áp lực">Bồn lọc cát trọng lực / áp lực</option>
+          <option value="Giàn mưa & Ejector thu khí">Giàn mưa & Ejector thu khí</option>
+          <option value="Cụm van & Đường ống công nghệ">Cụm van & Đường ống công nghệ</option>
+          <option value="Trạm bơm cấp 1 (Giếng khoan)">Trạm bơm cấp 1 (Giếng khoan)</option>
+          <option value="Trạm bơm cấp 2 & Cụm biến tần">Trạm bơm cấp 2 & Cụm biến tần</option>
+          <option value="Nhà hóa chất & Hệ thống châm Clo">Nhà hóa chất & Hệ thống châm Clo</option>
+          <option value="Nhà bao che máy phát điện">Nhà bao che máy phát điện</option>
+          <option value="Nhà quản lý điều hành">Nhà quản lý điều hành</option>
+          <option value="Hàng rào & Cổng trạm">Hàng rào & Cổng trạm</option>
+          <option value="KHAC">Khác... (Tự nhập tên cấu kiện)</option>
+        </select>
+        <input id="pointCustomSectionInput" type="text" class="hidden" placeholder="Gõ tên cấu kiện cụ thể..." style="margin-bottom: 8px;">
+
+        <label style="font-weight: 700; color: #0f172a;">2. Loại đối tượng khảo sát:</label>
+        <select id="pointObjectTypeSelect" class="form-select" style="margin-bottom: 8px;">
+          <option value="Kết cấu xây dựng (BTCT, gạch, tole, thép)">Kết cấu xây dựng (BTCT, gạch, tole, thép)</option>
+          <option value="Thiết bị cơ điện / Công nghệ (Bơm, van, tủ điện, đồng hồ)">Thiết bị cơ điện / Công nghệ (Bơm, van, tủ điện, đồng hồ)</option>
+          <option value="Hệ thống đường ống & Phụ tùng kết nối">Hệ thống đường ống & Phụ tùng kết nối</option>
+        </select>
+
+        <label style="font-weight: 700; color: #0f172a;">3. Ghi chú hiện trạng hư hỏng:</label>
+        <input id="pointNoteInput" type="text" placeholder="VD: Nứt bê tông chân đài, rỉ mục mặt bích D90, bơm rung lắc...">
+      </div>
+
+      <div class="status-card">
+        <div class="status-row">
+          <span>Tọa độ VN-2000</span>
+          <strong id="pointVN2000Text">Chưa thu nhận</strong>
+        </div>
+        <div class="status-row">
+          <span>Smart GNSS (Bộ lọc 20 mẫu)</span>
+          <strong id="pointAccuracyText">± -- m</strong>
+        </div>
+      </div>
+
+      <button id="btnGetPointGPS" class="btn-secondary" style="width:100%; height:46px; margin: 10px 0;">
+        <span id="btnPointGPSText">◎ Thu nhận Smart GNSS vị trí (20 Mẫu)</span>
+      </button>
+
+      <div class="camera-card">
+        <div class="camera-header">
+          <h3>🎥 Camera & Video Hiện trường</h3>
+          <button id="btnOpenFullscreenCam" class="btn-small-blue">⛶ Phóng to</button>
+        </div>
+
+        <div class="video-container" id="inlineVideoWrapper">
+          <video id="cameraPreview" autoplay playsinline muted></video>
+        </div>
+
+        <div class="camera-actions">
+          <button id="btnToggleCamera" class="btn-camera blue">Mở Camera</button>
+          <button id="btnRecordVideo" class="btn-camera red">🔴 Quay Video</button>
+          <button id="btnSnapPhoto" class="btn-camera orange">📷 Chụp ảnh</button>
+        </div>
+
+        <div id="videoRecordedNotice" class="video-notice hidden">
+          <span>✓ Đã ghi video bằng chứng</span>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="margin-bottom:6px; font-size:12px;">Ảnh hiện trường đã chụp (<span id="photoCount">0</span>)</label>
+          <div id="cameraTimeline" class="camera-timeline"></div>
+        </div>
+      </div>
+
+      <button id="btnSavePointItem" class="btn-primary" style="height:52px; width:100%; margin-top:16px;">
+        💾 Lưu cấu kiện & Media vào hồ sơ
+      </button>
+
+      <div style="margin-top:20px;">
+        <h3 style="font-size:16px; margin-bottom:10px;">Cấu kiện đã ghi nhận (<span id="savedPointsCount">0</span>)</h3>
+        <div id="savedPointsList" class="saved-points-list"></div>
+      </div>
+    </div>
+
+    <!-- KHUNG CAMERA PHÓNG TO -->
+    <div id="fullscreenCameraOverlay" class="fullscreen-cam-overlay" style="display: none;">
+      <video id="cameraPreviewFS" autoplay playsinline muted></video>
+      <div class="fs-cam-top-hud">
+        <span id="fsRecBadge" class="fs-rec-badge">⚪ SẴN SÀNG</span>
+        <button id="btnCloseFullscreenCam" class="fs-tool-btn" title="Thu nhỏ">🗗</button>
+      </div>
+
+      <div class="fs-cam-bottom-hud" style="justify-content: space-around; width: 100%; padding: 16px 20px;">
+        <button id="btnSnapPhotoFS" class="fs-btn-snap" title="Chụp ảnh">📷</button>
+        <button id="btnRecordVideoFS" class="fs-btn-record" title="Quay video">
+          <span class="fs-rec-circle"></span>
+        </button>
+      </div>
+    </div>
+  </section>
+  
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH 2C: KHẢO SÁT ĐỒNG HỒ KHÁCH HÀNG (screenCustomerMeter) -->
+  <!-- ======================================================================= -->
+  <section id="screenCustomerMeter" class="screen" style="display:none;">
+    <header class="nav-header">
+      <button id="btnExitMeter" class="back-btn">←</button>
+      <div>
+        <h2 id="meterProjectTitle">Tên công trình</h2>
+        <p id="meterProjectSubtitle">Số hóa điểm đấu nối khách hàng</p>
+      </div>
+    </header>
+
+    <div class="form-page">
+      <div class="card-section" style="background:#f8fafc; border:1px solid #cbd5e1; margin-bottom:12px;">
+        <label style="font-weight:700; color:#0f172a;">1. Mã khách hàng / Danh bạ (Khớp CSDL tỉnh):</label>
+        <input id="meterCustCode" type="text" placeholder="VD: KH-024810 hoặc Số đồng hồ">
+
+        <label style="font-weight:700; color:#0f172a; margin-top:8px;">2. Tên chủ hộ (Theo Hợp đồng cấp nước):</label>
+        <input id="meterCustName" type="text" placeholder="VD: Huỳnh Văn Khen">
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label style="font-size:12px; font-weight:600;">Số điện thoại:</label>
+            <input id="meterCustPhone" type="tel" placeholder="09xxxxxxx" style="height:42px;">
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:12px; font-weight:600;">Cỡ đồng hồ / Ống:</label>
+            <select id="meterPipeSize" class="form-select" style="height:42px; font-size:13px;">
+              <option value="D15_D21" selected>ĐH D15 - Nhánh D21</option>
+              <option value="D20_D27">ĐH D20 - Nhánh D27</option>
+              <option value="D25_D34">ĐH D25 - Nhánh D34</option>
+              <option value="KHAC">Cỡ khác...</option>
+            </select>
+          </div>
+        </div>
+
+        <label style="font-weight:700; color:#0f172a; margin-top:8px;">3. Địa chỉ hộ dân (Ấp / Khóm):</label>
+        <input id="meterAddress" type="text" placeholder="VD: Ấp Tích Phước, Xã Thới Hòa">
+
+        <label style="font-weight:700; color:#0f172a; margin-top:8px;">4. Ghi chú hiện trạng đồng hồ:</label>
+        <input id="meterNote" type="text" placeholder="VD: Đồng hồ mờ số, đặt âm đất, có van khóa...">
+      </div>
+
+      <!-- Tọa độ định vị đồng hồ -->
+      <div class="status-card">
+        <div class="status-row">
+          <span>Tọa độ VN-2000 Đồng hồ</span>
+          <strong id="meterVN2000Text">Chưa thu nhận</strong>
+        </div>
+        <div class="status-row">
+          <span>Độ chính xác GNSS</span>
+          <strong id="meterAccuracyText">± -- m</strong>
+        </div>
+      </div>
+
+      <button id="btnGetMeterGPS" class="btn-secondary" style="width:100%; height:46px; margin: 10px 0;">
+        <span id="btnMeterGPSText">◎ Lấy vị trí đồng hồ (Smart GNSS)</span>
+      </button>
+
+      <!-- Chụp ảnh hiện trường đồng hồ -->
+      <div class="card-section" style="margin-bottom:12px;">
+        <label style="font-weight:700; color:#0f172a; margin-bottom:8px; display:block;">📷 Ảnh đồng hồ & Hộp bảo vệ:</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="btnSnapMeterPhoto" class="btn btn-outline" style="flex:1; height:44px; font-size:13px;">
+            📷 Chụp ảnh đồng hồ
+          </button>
+          <input type="file" id="inputMeterPhoto" accept="image/*" capture="environment" style="display:none;">
+          <span id="meterPhotoBadge" style="font-size:12px; color:#16a34a; font-weight:700;">Chưa có ảnh</span>
+        </div>
+        <div id="meterPhotoPreviewBox" style="margin-top:8px; display:none;">
+          <img id="meterPhotoImg" src="" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px;">
+        </div>
+      </div>
+
+      <button id="btnSaveCustomerMeter" class="btn-primary" style="height:52px; width:100%; margin-top:6px; background:#6d28d9;">
+        💾 Lưu hồ sơ khách hàng vào CSDL
+      </button>
+
+      <div style="margin-top:20px;">
+        <h3 style="font-size:15px; margin-bottom:10px;">Danh sách hộ đã đo (<span id="savedMetersCount">0</span>)</h3>
+        <div id="savedMetersList" class="saved-points-list"></div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH 3: DỮ LIỆU KHẢO SÁT & ĐỒNG BỘ (tab-data) -->
+  <!-- ======================================================================= -->
+  <section id="tab-data" class="screen" style="display:none;">
+    <header class="topbar">
+      <div class="brand"><strong>TGS</strong><span>Dữ Liệu Khảo Sát</span></div>
+    </header>
+
+    <div class="page">
+      <div class="status-card" style="margin-bottom: 14px;">
+        <h3 id="dataCurrentProjectTitle" style="margin: 0 0 6px; font-size: 16px;">Chưa chọn công trình</h3>
+        <p id="dataCurrentProjectSubtitle" style="margin: 0; font-size: 12px; color: #64748b;">Chọn công trình để đồng bộ hoặc xuất dữ liệu</p>
+      </div>
+
+      <button id="btnSyncMaster" class="btn-primary" style="height: 52px; width: 100%; font-size: 15px; margin-bottom: 12px; background: #0284c7;">
+        ☁️ ĐỒNG BỘ DỮ LIỆU VỀ MÁY TRẠM / CLOUD
+      </button>
+      <div id="dataSyncStatus" style="font-size: 12.5px; text-align: center; margin-bottom: 14px; font-weight: 600;" class="hidden"></div>
+
+      <!-- CỤM 2 NÚT XUẤT DỮ LIỆU: GIS TỈNH & SAO LƯU NỘI BỘ -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+        <button id="btnExportGeoJSON" class="btn-primary" onclick="TGS.DataHub.exportGeoJSON()" style="height: 44px; font-size: 12.5px; background: #0284c7;">
+          🗺️ Xuất File GIS (.geojson)
+        </button>
+        <button id="btnExportJSON" class="btn-secondary" onclick="TGS.DataHub.exportJSON()" style="height: 44px; font-size: 12.5px;">
+          📤 Sao Lưu Gói (.json)
+        </button>
+      </div>
+
+      <h3 style="font-size: 15px; margin-bottom: 8px;">Danh sách công trình trên máy:</h3>
+      <div id="dataLocalProjectsList" class="saved-points-list"></div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH 4: HỆ THỐNG & CÀI ĐẶT (tab-system) -->
+  <!-- ======================================================================= -->
+  <section id="tab-system" class="screen" style="display:none;">
+    <div class="screen-header">
+      <h2>Hệ Thống & Cài Đặt</h2>
+      <span class="badge-role" id="user-role-badge">Kỹ sư</span>
+    </div>
+
+    <div class="screen-body">
+      <!-- 1. ĐỊNH DANH CÁ NHÂN -->
+      <div class="card-section">
+        <div class="card-title">👤 Định Danh Cán Bộ Khảo Sát</div>
+        <div class="user-profile-box">
+          <div class="profile-avatar" id="sys-user-avatar">H</div>
+          <div class="profile-details">
+            <div class="profile-name" id="sys-user-name">Đang tải...</div>
+            <div class="profile-email" id="sys-user-email">email@domain.com</div>
+            <div class="profile-dept" id="sys-user-dept">Phòng Quản lý Khai thác</div>
+          </div>
+        </div>
+        <div class="action-row mt-10">
+          <button class="btn btn-outline btn-sm" onclick="TGS_System.openChangePassModal()">Đổi mật khẩu</button>
+          <button class="btn btn-danger-outline btn-sm" onclick="TGS_Auth.logout()">Đăng xuất</button>
+        </div>
+      </div>
+
+      <!-- 2. PHÊ DUYỆT WHITELIST -->
+      <div class="card-section admin-only" id="admin-whitelist-card" style="display: none;">
+        <div class="card-title-flex">
+          <span>🛡️ Duyệt Tài Khoản Đồng Nghiệp</span>
+          <span class="badge-count" id="pending-count">0</span>
+        </div>
+        <p class="card-desc">Danh sách đồng nghiệp đăng ký bằng Gmail chờ phê duyệt vào Whitelist.</p>
+        <div class="whitelist-container" id="whitelist-list">
+          <div class="empty-hint">Không có yêu cầu chờ duyệt.</div>
+        </div>
+      </div>
+
+      <!-- 3. CẤU HÌNH ĐỒNG BỘ LƯU TRỮ -->
+      <div class="card-section">
+        <div class="card-title">🔄 Cài Đặt Đồng Bộ Lưu Trữ</div>
+        
+        <div class="sync-option-box">
+          <div class="sync-info">
+            <div class="sync-name">Google Drive Cá Nhân</div>
+            <div class="sync-status" id="gdrive-status">Chưa liên kết</div>
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-link-gdrive" onclick="TGS_System.linkGoogleDrive()">
+            🔗 Liên kết 1-Chạm
+          </button>
+        </div>
+
+        <div class="sync-option-box mt-10">
+          <div class="sync-info">
+            <div class="sync-name">Máy Tính Cá Nhân (Local Server)</div>
+            <div class="sync-status" id="local-server-status">Chưa quét mã QR</div>
+          </div>
+          <div class="sync-actions-group">
+            <button class="btn btn-outline btn-sm" onclick="TGS_System.downloadSetupPackage()">
+              📥 Tải Setup (.bat)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="TGS_System.startQRScanner()">
+              📷 Quét QR Máy Tính
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. TÀI LIỆU & TRỢ GIÚP -->
+      <div class="card-section">
+        <div class="card-title">📚 Tài Liệu & Trợ Giúp</div>
+        <div class="guide-buttons-grid">
+          <button class="guide-btn" onclick="TGS_System.openGuideModal('setup')">
+            <span class="guide-icon">📖</span>
+            <span class="guide-text">
+              <strong>Hướng dẫn Cài Máy trạm</strong>
+              <small>Click đúp file .bat nhận dữ liệu qua Wi-Fi</small>
+            </span>
+          </button>
+          <button class="guide-btn" onclick="TGS_System.openGuideModal('survey')">
+            <span class="guide-icon">📘</span>
+            <span class="guide-text">
+              <strong>Cẩm nang Quy trình Khảo sát</strong>
+              <small>Chuẩn hóa Điểm, Tuyến cong & TGS-TG</small>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. CẬP NHẬT PHIÊN BẢN -->
+      <div class="card-section">
+        <div class="card-title">⚙️ Cập Nhật Phiên Bản Ứng Dụng</div>
+        <div class="version-row">
+          <span>Phiên bản hiện tại:</span>
+          <strong id="app-version-label">v2.1.0-rev2026</strong>
+        </div>
+        <button class="btn btn-primary btn-block mt-10" id="btn-update-sw" onclick="TGS_System.forceUpdateApp()">
+          🔄 Cập nhật phiên bản mới nhất
+        </button>
+        <div class="version-subtext">Xóa bộ nhớ đệm cache cũ và làm mới PWA trực tiếp từ GitHub.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================================================================= -->
+  <!-- BOTTOM NAVIGATION BAR CỐ ĐỊNH -->
+  <!-- ======================================================================= -->
+  <nav id="bottomNavBar" class="bottom-nav-bar" style="display:none;">
+    <button class="nav-item active" data-tab="tab-dashboard" onclick="TGS.Navigation.show('tab-dashboard')">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Tổng quan</span>
+    </button>
+    <button class="nav-item" data-tab="screenSurveyHome" onclick="TGS.Navigation.show('screenSurveyHome')">
+      <span class="nav-icon">📍</span>
+      <span class="nav-label">Khảo sát</span>
+    </button>
+    <button class="nav-item" data-tab="tab-data" onclick="TGS.Navigation.show('tab-data')">
+      <span class="nav-icon">📁</span>
+      <span class="nav-label">Dữ liệu</span>
+    </button>
+    <button class="nav-item" data-tab="tab-system" onclick="TGS.Navigation.show('tab-system')">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Hệ thống</span>
+    </button>
+  </nav>
+
+  <!-- ======================================================================= -->
+  <!-- CÁC MODAL HỆ THỐNG -->
+  <!-- ======================================================================= -->
+  <div id="modal-qr-scan" class="modal-backdrop" style="display: none; z-index: 10005;">
+    <div class="modal-content" style="background:#0f172a; color:#fff; border-radius:16px; padding:16px; width:92%; max-width:400px; text-align:center;">
+      <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:8px; margin-bottom:12px;">
+        <h3 style="margin:0; font-size:16px; color:#fff;">Quét mã QR Máy tính</h3>
+        <button class="modal-close" onclick="TGS_System.closeQRScanner()" style="color:#fff; font-size:22px; background:none; border:none; cursor:pointer;">✕</button>
+      </div>
+      
+      <div style="position:relative; width:100%; height:280px; background:#000; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+        <video id="qr-video-preview" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover; display:block;"></video>
+        <div style="position:absolute; width:200px; height:200px; border:2px dashed #00E5FF; border-radius:12px; pointer-events:none; box-shadow:0 0 0 9999px rgba(0,0,0,0.45);"></div>
+      </div>
+      
+      <p style="font-size:12px; color:#94a3b8; margin:10px 0 0;">Hướng camera vào mã QR đang mở trên màn hình máy tính.</p>
+    </div>
+  </div>
+
+  <div id="modal-guide" class="modal-backdrop" style="display: none; z-index: 10005;">
+    <div class="modal-content modal-lg">
+      <div class="modal-header">
+        <h3 id="modal-guide-title">Tài liệu Hướng dẫn</h3>
+        <button class="modal-close" onclick="TGS_System.closeGuideModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modal-guide-body"></div>
+    </div>
+  </div>
+<!-- MODAL TÁC VỤ KHI CHỌN CÔNG TRÌNH ĐÃ LƯU -->
+  <div id="modalProjectActions" class="modal-backdrop" style="display:none; z-index:10010;">
+    <div class="modal-content" style="max-width:360px; padding:20px; text-align:center;">
+      <h3 id="actionProjTitle" style="margin:0 0 4px; font-size:17px; color:#0f172a;">Tên công trình</h3>
+      <p id="actionProjSubtitle" style="margin:0 0 16px; font-size:12px; color:#64748b;">Mã công trình</p>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button id="btnActionContinueSurvey" class="btn btn-primary" style="height:46px; font-size:14px;">
+          📍 Tiếp tục khảo sát bổ sung
+        </button>
+        <button id="btnActionExportGeo" class="btn btn-outline" style="height:44px; font-size:13px; color:#0284c7; border-color:#0284c7;">
+          🗺️ Xuất GeoJSON nạp GIS tỉnh
+        </button>
+        <button id="btnActionCloseModal" class="btn btn-secondary" style="height:40px; font-size:13px;">
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+  
+</div> <!-- KẾT THÚC #app -->
+
+<!-- DEPENDENCIES -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="db.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
