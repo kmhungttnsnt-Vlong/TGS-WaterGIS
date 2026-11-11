@@ -13,7 +13,6 @@
   <!-- iOS Safari -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TGS Survey">
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Favicon -->
@@ -38,7 +37,7 @@
     <div style="background: #ffffff; border-radius: 16px; width: 100%; max-width: 380px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
       <div style="text-align: center; margin-bottom: 20px;">
         <div style="width: 50px; height: 50px; background: #0284c7; color: #fff; font-size: 22px; font-weight: bold; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 8px;">TGS</div>
-        <h2 style="margin: 0; font-size: 20px; color: #0f172a;">TGS Survey System</h2>
+        <h2 style="margin: 0; font-size: 20px; color: #0f172a;">TGS WaterGIS</h2>
         <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Hạ tầng Cấp nước Nông thôn</p>
       </div>
 
@@ -82,8 +81,8 @@
   <!-- ======================================================================= -->
   <section id="tab-dashboard" class="screen" style="display:none;">
     <header class="topbar">
-      <div class="brand"><strong>TGS</strong><span>Survey</span></div>
-      <div class="version">Genesis 2.0</div>
+      <div class="brand"><strong>TGS</strong><span>WaterGIS</span></div>
+      <div class="version">v2.1</div>
     </header>
 
     <div class="page">
@@ -130,7 +129,9 @@
     </div>
   </section>
 
-<!-- FORM TẠO/CẬP NHẬT TRẠM CẤP NƯỚC (screenProject) -->
+  <!-- ======================================================================= -->
+  <!-- FORM TẠO/CẬP NHẬT TRẠM CẤP NƯỚC (screenProject) -->
+  <!-- ======================================================================= -->
   <section id="screenProject" class="screen" style="display:none;">
     <header class="nav-header">
       <button id="btnBackHome" class="back-btn">←</button>
@@ -231,41 +232,9 @@
     </div>
   </section>
 
-      <!-- ĐỊA BÀN HÀNH CHÍNH (XÃ/PHƯỜNG & ẤP/KHÓM) -->
-      <div style="display:flex; gap:8px; margin-top:4px;">
-        <div style="flex:1;">
-          <label style="margin-top:8px;">Xã / Phường:</label>
-          <input id="projectCommune" type="text" placeholder="VD: Xã Thới Hòa">
-        </div>
-        <div style="flex:1;">
-          <label style="margin-top:8px;">Ấp / Khóm:</label>
-          <input id="projectHamlet" type="text" placeholder="VD: Ấp Tích Phước">
-        </div>
-      </div>
-
-      <label style="margin-top:10px;">Địa chỉ chi tiết / Vị trí mốc:</label>
-      <input id="projectLocation" type="text" placeholder="VD: Đường đan Kênh Ranh, Ấp Tích Phước">
-
-      <!-- QUẢN LÝ TÀI SẢN THEO CHUẨN CSDL SỞ / TỈNH -->
-      <div style="display:flex; gap:8px; margin-top:4px;">
-        <div style="flex:1;">
-          <label style="margin-top:8px;">Công suất (m³/ngđ):</label>
-          <input id="projectCapacity" type="number" placeholder="VD: 480">
-        </div>
-        <div style="flex:1;">
-          <label style="margin-top:8px;">Năm vận hành:</label>
-          <input id="projectYear" type="number" placeholder="VD: 2007">
-        </div>
-      </div>
-
-      <label style="margin-top:10px;">Cán bộ quản lý vận hành trạm:</label>
-      <input id="projectManager" type="text" placeholder="Họ tên cán bộ quản lý trạm (SĐT)">
-
-      <button id="btnCreateProject" class="btn-primary" style="margin-top: 18px;">Vào khảo sát</button>
-    </div>
-  </section>
-
+  <!-- ======================================================================= -->
   <!-- TRUNG TÂM ĐIỀU HÀNH KHẢO SÁT (screenSurveyHome) -->
+  <!-- ======================================================================= -->
   <section id="screenSurveyHome" class="screen" style="display:none;">
     <header class="nav-header">
       <button id="btnBackProject" class="back-btn">←</button>
@@ -292,7 +261,7 @@
         <p>Ngữ cảnh kỹ thuật · Bộ lọc 20 mẫu · Chụp Watermark & Video</p>
       </div>
       
-      <!-- THẺ 3: KHẢO SÁT ĐỒNG HỒ KHÁCH HÀNG (MỚI) -->
+      <!-- THẺ 3: KHẢO SÁT ĐỒNG HỒ KHÁCH HÀNG -->
       <div id="btnCustomerMeterSurvey" class="survey-card" style="border-left: 5px solid #8b5cf6;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <h3 style="color:#6d28d9;">Khảo sát đồng hồ khách hàng</h3>
@@ -323,7 +292,9 @@
     <div class="map-wrapper-fullscreen">
       <div id="map"></div>
 
-      <!-- Hàng 0: Định danh Tuyến Chính / Tuyến Nhánh -->
+      <!-- BẢNG BÓC TÁCH ỐNG TRÁI / PHẢI & PHỤ KIỆN ĐẤU NỐI KỸ THUẬT -->
+      <div class="linear-spec-card">
+        <!-- Hàng 0: Định danh Tuyến Chính / Tuyến Nhánh -->
         <div style="display:flex; gap:8px; margin-bottom:6px; background:#eff6ff; padding:6px; border-radius:8px;">
           <div style="flex:1;">
             <label style="font-size:11px; font-weight:700; color:#1e40af; display:block;">Phân loại tuyến:</label>
@@ -337,9 +308,7 @@
             <input id="lineNumberInput" type="text" value="01" placeholder="VD: 01, 02A..." style="height:32px; font-size:11.5px; width:100%; border:1px solid #94a3b8; border-radius:6px; padding:0 6px; box-sizing:border-box;">
           </div>
         </div>
-      
-      <!-- BẢNG BÓC TÁCH ỐNG TRÁI / PHẢI & PHỤ KIỆN ĐẤU NỐI KỸ THUẬT -->
-      <div class="linear-spec-card">
+
         <!-- Hàng 1: Quy cách ống Trái / Phải -->
         <div style="display:flex; gap:8px;">
           <div style="flex:1;">
@@ -587,7 +556,6 @@
     </div>
   </section>
   
-  <!-- ======================================================================= -->
   <!-- ======================================================================= -->
   <!-- MÀN HÌNH KHẢO SÁT & QUẢN LÝ ĐỒNG HỒ KHÁCH HÀNG (screenCustomerMeter) -->
   <!-- ======================================================================= -->
@@ -939,7 +907,8 @@
       <div class="modal-body" id="modal-guide-body"></div>
     </div>
   </div>
-<!-- MODAL TÁC VỤ KHI CHỌN CÔNG TRÌNH ĐÃ LƯU -->
+
+  <!-- MODAL TÁC VỤ KHI CHỌN CÔNG TRÌNH ĐÃ LƯU -->
   <div id="modalProjectActions" class="modal-backdrop" style="display:none; z-index:10010;">
     <div class="modal-content" style="max-width:360px; padding:20px; text-align:center;">
       <h3 id="actionProjTitle" style="margin:0 0 4px; font-size:17px; color:#0f172a;">Tên công trình</h3>
