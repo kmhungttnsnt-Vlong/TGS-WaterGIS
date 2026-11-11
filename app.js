@@ -342,33 +342,44 @@ const TGS = (() => {
 
         async saveMeter() {
             if (!State.currentProject) return;
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value.trim() : "";
+            };
 
-            const custCode = document.getElementById("meterCustCode").value.trim();
-            const custName = document.getElementById("meterCustName").value.trim();
-            const phone = document.getElementById("meterCustPhone").value.trim();
-            const pipeSize = document.getElementById("meterPipeSize").value;
-            const address = document.getElementById("meterAddress").value.trim();
-            const note = document.getElementById("meterNote").value.trim();
-
+            const custName = getVal("meterCustName");
             if (!custName) {
-                alert("Vui lòng nhập tên chủ hộ / khách hàng.");
+                alert("Vui lòng nhập tên khách hàng.");
                 return;
             }
-
             if (!this.observedGNSS) {
-                alert("Vui lòng lấy vị trí Smart GNSS của đồng hồ trước khi lưu.");
+                alert("Vui lòng bấm 'Lấy vị trí đồng hồ' trước khi lưu.");
                 return;
             }
 
             const meterRecord = {
                 id: Date.now().toString(),
-                custCode: custCode || `KH-${Date.now().toString().slice(-6)}`,
+                pipeLineCode: getVal("meterPipeLineSelect"), // KHÓA NGOẠI LIÊN KẾT TUYẾN ỐNG
+                custCode: getVal("meterCustCode") || `KH-${Date.now().toString().slice(-6)}`,
                 custName: custName,
-                phone: phone,
-                pipeSize: pipeSize,
-                address: address,
-                note: note,
+                custNameTransfer: getVal("meterCustNameTransfer"),
+                phone: getVal("meterCustPhone"),
+                contractNum: getVal("meterContractNum"),
+                contractDate: getVal("meterContractDate"),
+                envFee: getVal("meterEnvFee"),
+                address: getVal("meterAddress"),
+                
+                pipeSize: getVal("meterPipeSize"),
+                status: getVal("meterStatus"),
+                modelInitial: getVal("meterModelInitial"),
+                serialInitial: getVal("meterSerialInitial"),
+                serialTransfer: getVal("meterSerialTransfer"),
+                serialExpired: getVal("meterSerialExpired"),
+                inspectInstallDate: getVal("meterInspectInstallDate"),
+                inspectReplaceDate: getVal("meterInspectReplaceDate"),
+                note: getVal("meterNote"),
                 photo: this.capturedPhoto,
+
                 coordinates: {
                     lat: this.observedGNSS.latitude,
                     lng: this.observedGNSS.longitude,
@@ -384,7 +395,7 @@ const TGS = (() => {
 
             this.resetForm();
             this.renderSavedMeters();
-            alert(`✓ Đã lưu đồng hồ của hộ: [${custName}]!`);
+            alert(`✓ Đã lưu đồng hồ của hộ: [${custName}] thuộc tuyến [${meterRecord.pipeLineCode}]!`);
         },
 
         renderSavedMeters() {
@@ -475,48 +486,51 @@ const TGS = (() => {
         },
 
         async createNewProject() {
-            const nameEl = document.getElementById("projectName");
-            const codeEl = document.getElementById("projectCode");
-            const commEl = document.getElementById("projectCommune");
-            const hamEl = document.getElementById("projectHamlet");
-            const locEl = document.getElementById("projectLocation");
-            const capEl = document.getElementById("projectCapacity");
-            const yearEl = document.getElementById("projectYear");
-            const mgrEl = document.getElementById("projectManager");
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                return el ? el.value.trim() : "";
+            };
 
-            const name = nameEl ? nameEl.value.trim() : "";
-            const code = codeEl ? codeEl.value.trim() : "";
-            const commune = commEl ? commEl.value.trim() : "";
-            const hamlet = hamEl ? hamEl.value.trim() : "";
-            const location = locEl ? locEl.value.trim() : "";
-            const capacity = capEl ? capEl.value.trim() : "";
-            const opYear = yearEl ? yearEl.value.trim() : "";
-            const manager = mgrEl ? mgrEl.value.trim() : "";
+            const name = getVal("projectName");
+            const code = getVal("projectCode");
             const user = TGS_Auth.getCurrentUser();
 
             if (!name || !code) {
-                alert("Vui lòng nhập tên và mã công trình.");
+                alert("Vui lòng nhập Tên trạm và Mã số trạm.");
                 return;
             }
 
             const newProj = {
-                name: name,
                 code: code,
+                name: name,
                 province: "Tỉnh Vĩnh Long",
-                commune: commune || "Chưa xác định",
-                hamlet: hamlet || "Chưa xác định",
-                location: location || `${hamlet}, ${commune}`,
-                capacity_m3_day: capacity ? Number(capacity) : 0,
-                operationYear: opYear ? Number(opYear) : new Date().getFullYear(),
-                manager: manager || "Chưa phân công",
+                commune: getVal("projectCommune") || "Chưa xác định",
+                hamlet: getVal("projectHamlet") || "Chưa xác định",
+                location: getVal("projectLocation") || `${getVal("projectHamlet")}, ${getVal("projectCommune")}`,
+                
+                // Thuộc tính GIS chuyên ngành nước sạch
+                capacity_m3_day: Number(getVal("projectCapacity")) || 0,
+                operationYear: Number(getVal("projectYear")) || new Date().getFullYear(),
+                upgradeDate: getVal("projectUpgradeDate") || "",
+                upgradeCapacity: Number(getVal("projectUpgradeCapacity")) || 0,
+                technology: getVal("projectTechnology") || "Lắng tiếp xúc ngược + Lọc cát",
+                pumps: getVal("projectPumps") || "Chưa cập nhật",
+                waterSource: getVal("projectWaterSource") || "Nước ngầm (Giếng khoan)",
+                status: getVal("projectStatus") || "Đang hoạt động",
+                rawWaterMeter: Number(getVal("projectRawMeter")) || 0,
+                cleanWaterMeter: Number(getVal("projectCleanMeter")) || 0,
+                manager: getVal("projectManager") || "Chưa phân công",
+                
+                // Mảng dữ liệu không gian
                 centralMeridian: 105.5,
-                status: "draft",
-                points: [],
-                pointFeatures: [],
-                customerMeters: [],
+                pipelines: [],          // Danh sách các tuyến ống (LineString)
+                points: [],             // Mốc kỹ thuật trên tuyến (Tê, Co, Van)
+                pointFeatures: [],      // Cấu kiện bên trong khuôn viên trạm
+                customerMeters: [],     // Hồ sơ đồng hồ khách hàng
+                
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
-                author: user ? `${user.name} (${user.email})` : "Kỹ sư khảo sát"
+                author: user ? `${user.name} (${user.email})` : "Kỹ sư TGS"
             };
 
             await Persistence.createProject(newProj);
@@ -767,6 +781,30 @@ const TGS = (() => {
                   `${fittingNote ? `Phụ kiện: ${fittingNote}\n` : ''}` +
                   `Quy cách đoạn tiếp theo: Trái [${left}] - Phải [${right}]`);
         }
+       getActivePipelineCode() {
+            const tierEl = document.getElementById("lineTierType");
+            const numEl = document.getElementById("lineNumberInput");
+            const tier = (tierEl && tierEl.value === "TUYEN_NHANH") ? "TN" : "TC";
+            const num = numEl ? numEl.value.trim().padStart(2, "0") : "01";
+            return `${State.currentProject ? State.currentProject.code : 'TGS'}-${tier}${num}`;
+        },
+       const activePipeCode = LinearModule.getActivePipelineCode();
+                    const milestone = {
+                        id: Date.now().toString(),
+                        pipelineCode: activePipeCode,
+                        lat: evaluated.latitude,
+                        lng: evaluated.longitude,
+                        accuracy: evaluated.accuracy,
+                        vn2000: evaluated.vn2000,
+                        meterMark: Math.round(LinearModule.totalLength),
+                        leftPipe: leftPipe,
+                        rightPipe: rightPipe,
+                        fitting: {
+                            type: fittingType,
+                            detail: fittingNote || (fittingType !== "KHONG" ? fittingType : "Không phụ kiện")
+                        },
+                        timestamp: Date.now()
+                    };
     };
 
     /* =========================================================================
@@ -1220,7 +1258,7 @@ const TGS = (() => {
                         "Ghi_Chu": m.note
                     }
                 });
-            });
+               });
 
             const geojsonDataset = {
                 "type": "FeatureCollection",
@@ -1254,6 +1292,27 @@ const TGS = (() => {
             link.click();
             alert("✓ Đã xuất tập dữ liệu JSON về máy!");
         }
+       // Tổng hợp và đếm đồng hồ theo từng tuyến
+            const lineCoordinates = (proj.points || []).map(pt => [pt.lng, pt.lat]);
+            if (lineCoordinates.length >= 2) {
+                const activeLineCode = proj.points[0]?.pipelineCode || `${proj.code}-TC01`;
+                
+                // ĐẾM SỐ LƯỢNG ĐỒNG HỒ ĐANG ĐẤU NỐI VÀO TUYẾN NÀY
+                const connectedMeters = (proj.customerMeters || []).filter(m => m.pipeLineCode === activeLineCode);
+
+                features.push({
+                    "type": "Feature",
+                    "geometry": { "type": "LineString", "coordinates": lineCoordinates },
+                    "properties": {
+                        "Loai_Doi_Tuong": "TUYEN_ONG",
+                        "Ma_Tuyen": activeLineCode,
+                        "Ten_Tram": proj.name,
+                        "Tong_Chieu_Dai_m": Math.round(LinearModule.totalLength || 0),
+                        "So_Luong_Dong_Ho_Dau_Noi": connectedMeters.length,
+                        "Danh_Sach_Ho_Dan": connectedMeters.map(m => `${m.custName} (${m.custCode})`).join("; ")
+                    }
+                });
+            }
     };
 
     /* =========================================================================
@@ -1484,6 +1543,30 @@ const TGS = (() => {
         Navigation: Navigation,
         DataHub: DataHub // ĐÃ XUẤT RA NGOÀI ĐỂ NÚT BẤM ONCLICK GỌI CHÍNH XÁC
     };
+populatePipelineOptions() {
+            const selectEl = document.getElementById("meterPipeLineSelect");
+            if (!selectEl || !State.currentProject) return;
+            selectEl.innerHTML = "";
+
+            // Lấy danh sách các tuyến ống đã xuất hiện trong dự án
+            const recordedCodes = new Set();
+            (State.currentProject.points || []).forEach(pt => {
+                if (pt.pipelineCode) recordedCodes.add(pt.pipelineCode);
+            });
+
+            if (recordedCodes.size === 0) {
+                recordedCodes.add(`${State.currentProject.code}-TC01`);
+            }
+
+            recordedCodes.forEach(code => {
+                const opt = document.createElement("option");
+                opt.value = code;
+                opt.innerText = code.includes("-TN") 
+                    ? `Tuyến nhánh: ${code}` 
+                    : `Tuyến chính: ${code}`;
+                selectEl.appendChild(opt);
+            });
+        },
 })();
 
 /* =========================================================================
