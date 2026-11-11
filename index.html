@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-  <title>TGS Platform Genesis 2.0</title>
+  <title>TGS WaterGIS - Quản Trị Dữ Liệu Nước Sạch</title>
+  <meta name="apple-mobile-web-app-title" content="TGS WaterGIS">
 
   <!-- PWA & Mobile App Icons -->
   <link rel="manifest" href="manifest.json">
@@ -129,22 +130,106 @@
     </div>
   </section>
 
-<!-- FORM TẠO CÔNG TRÌNH (screenProject) -->
+<!-- FORM TẠO/CẬP NHẬT TRẠM CẤP NƯỚC (screenProject) -->
   <section id="screenProject" class="screen" style="display:none;">
     <header class="nav-header">
       <button id="btnBackHome" class="back-btn">←</button>
       <div>
-        <h2>Tạo hồ sơ trạm / công trình</h2>
-        <p>Cơ sở dữ liệu số & Quản lý tài sản</p>
+        <h2>Hồ sơ Trạm cấp nước</h2>
+        <p>CSDL GIS Hạ tầng Cấp nước Nông thôn</p>
       </div>
     </header>
 
     <div class="form-page">
-      <label>1. Tên công trình / Trạm cấp nước:</label>
-      <input id="projectName" type="text" placeholder="VD: Trạm cấp nước Thới Hòa">
+      <div class="card-section">
+        <label>1. Tên trạm cấp nước:</label>
+        <input id="projectName" type="text" placeholder="VD: Trạm cấp nước Thới Hòa">
 
-      <label>2. Mã số trạm (Mã GIS tỉnh):</label>
-      <input id="projectCode" type="text" placeholder="VD: TGS-TH-001">
+        <label style="margin-top:8px;">2. Mã số trạm (Mã GIS tỉnh):</label>
+        <input id="projectCode" type="text" placeholder="VD: TGS-TH-001">
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Xã / Phường:</label>
+            <input id="projectCommune" type="text" placeholder="VD: Xã Thới Hòa">
+          </div>
+          <div style="flex:1;">
+            <label>Ấp / Khóm:</label>
+            <input id="projectHamlet" type="text" placeholder="VD: Ấp Tích Phước">
+          </div>
+        </div>
+
+        <label style="margin-top:8px;">Địa chỉ chi tiết:</label>
+        <input id="projectLocation" type="text" placeholder="VD: Đường đan Kênh Ranh, Ấp Tích Phước">
+      </div>
+
+      <div class="card-section" style="margin-top:12px;">
+        <div class="card-title">⚙️ Thông số Kỹ thuật & Công nghệ</div>
+        
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;">
+            <label>Công suất TK (m³/ngđ):</label>
+            <input id="projectCapacity" type="number" placeholder="VD: 480">
+          </div>
+          <div style="flex:1;">
+            <label>Năm vận hành:</label>
+            <input id="projectYear" type="number" placeholder="VD: 2007">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Ngày nâng cấp cải tạo:</label>
+            <input id="projectUpgradeDate" type="date">
+          </div>
+          <div style="flex:1;">
+            <label>Nâng công suất (m³/ngđ):</label>
+            <input id="projectUpgradeCapacity" type="number" placeholder="VD: 960">
+          </div>
+        </div>
+
+        <label style="margin-top:8px;">Công nghệ xử lý:</label>
+        <input id="projectTechnology" type="text" placeholder="VD: Lắng tiếp xúc dòng ngược + Giàn mưa + Lọc cát trọng lực">
+
+        <label style="margin-top:8px;">Thiết bị bơm chính:</label>
+        <input id="projectPumps" type="text" placeholder="VD: Bơm chìm hỏa tiễn 7.5kW + 02 Bơm ly tâm cấp 2">
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Nguồn nước khai thác:</label>
+            <select id="projectWaterSource" class="form-select">
+              <option value="Nước ngầm (Giếng khoan)" selected>Nước ngầm (Giếng khoan)</option>
+              <option value="Nước mặt (Sông/Kênh)">Nước mặt (Sông/Kênh)</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label>Trạng thái trạm:</label>
+            <select id="projectStatus" class="form-select">
+              <option value="Đang hoạt động" selected>Đang hoạt động</option>
+              <option value="Đang nâng cấp sửa chữa">Đang nâng cấp</option>
+              <option value="Tạm dừng cấp nước">Tạm dừng</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Đồng hồ nước thô (m³):</label>
+            <input id="projectRawMeter" type="number" placeholder="Chỉ số m³">
+          </div>
+          <div style="flex:1;">
+            <label>Đồng hồ nước sạch (m³):</label>
+            <input id="projectCleanMeter" type="number" placeholder="Chỉ số m³">
+          </div>
+        </div>
+
+        <label style="margin-top:8px;">Cán bộ quản lý vận hành trạm:</label>
+        <input id="projectManager" type="text" placeholder="Họ tên cán bộ quản lý (SĐT liên hệ)">
+      </div>
+
+      <button id="btnCreateProject" class="btn-primary" style="margin-top: 18px;">Lưu & Bắt đầu Quản trị</button>
+    </div>
+  </section>
 
       <!-- ĐỊA BÀN HÀNH CHÍNH (XÃ/PHƯỜNG & ẤP/KHÓM) -->
       <div style="display:flex; gap:8px; margin-top:4px;">
@@ -238,6 +323,21 @@
     <div class="map-wrapper-fullscreen">
       <div id="map"></div>
 
+      <!-- Hàng 0: Định danh Tuyến Chính / Tuyến Nhánh -->
+        <div style="display:flex; gap:8px; margin-bottom:6px; background:#eff6ff; padding:6px; border-radius:8px;">
+          <div style="flex:1;">
+            <label style="font-size:11px; font-weight:700; color:#1e40af; display:block;">Phân loại tuyến:</label>
+            <select id="lineTierType" class="form-select" style="height:32px; font-size:11.5px;">
+              <option value="TUYEN_CHINH" selected>Tuyến chính (Truyền tải)</option>
+              <option value="TUYEN_NHANH">Tuyến nhánh (Phân phối)</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:11px; font-weight:700; color:#1e40af; display:block;">Số hiệu tuyến:</label>
+            <input id="lineNumberInput" type="text" value="01" placeholder="VD: 01, 02A..." style="height:32px; font-size:11.5px; width:100%; border:1px solid #94a3b8; border-radius:6px; padding:0 6px; box-sizing:border-box;">
+          </div>
+        </div>
+      
       <!-- BẢNG BÓC TÁCH ỐNG TRÁI / PHẢI & PHỤ KIỆN ĐẤU NỐI KỸ THUẬT -->
       <div class="linear-spec-card">
         <!-- Hàng 1: Quy cách ống Trái / Phải -->
@@ -488,49 +588,130 @@
   </section>
   
   <!-- ======================================================================= -->
-  <!-- MÀN HÌNH 2C: KHẢO SÁT ĐỒNG HỒ KHÁCH HÀNG (screenCustomerMeter) -->
+  <!-- ======================================================================= -->
+  <!-- MÀN HÌNH KHẢO SÁT & QUẢN LÝ ĐỒNG HỒ KHÁCH HÀNG (screenCustomerMeter) -->
   <!-- ======================================================================= -->
   <section id="screenCustomerMeter" class="screen" style="display:none;">
     <header class="nav-header">
       <button id="btnExitMeter" class="back-btn">←</button>
       <div>
         <h2 id="meterProjectTitle">Tên công trình</h2>
-        <p id="meterProjectSubtitle">Số hóa điểm đấu nối khách hàng</p>
+        <p id="meterProjectSubtitle">Số hóa hồ sơ khách hàng & mạng lưới</p>
       </div>
     </header>
 
     <div class="form-page">
-      <div class="card-section" style="background:#f8fafc; border:1px solid #cbd5e1; margin-bottom:12px;">
-        <label style="font-weight:700; color:#0f172a;">1. Mã khách hàng / Danh bạ (Khớp CSDL tỉnh):</label>
-        <input id="meterCustCode" type="text" placeholder="VD: KH-024810 hoặc Số đồng hồ">
+      <!-- 1. LIÊN KẾT TUYẾN ỐNG CẤP NƯỚC (TOPOLOGY KEY) -->
+      <div class="card-section" style="background:#eff6ff; border:1px solid #bfdbfe; margin-bottom:12px;">
+        <label style="font-weight:700; color:#1e40af;">📍 Tuyến ống đấu nối cấp nước:</label>
+        <select id="meterPipeLineSelect" class="form-select" style="font-weight:600; color:#1e3a8a; border-color:#3b82f6;">
+          <option value="TUYEN_CHINH_01">Tuyến chính số 01</option>
+        </select>
+      </div>
 
-        <label style="font-weight:700; color:#0f172a; margin-top:8px;">2. Tên chủ hộ (Theo Hợp đồng cấp nước):</label>
+      <!-- 2. ĐỊNH DANH KHÁCH HÀNG & HỢP ĐỒNG -->
+      <div class="card-section" style="margin-bottom:12px;">
+        <div class="card-title">👤 Thông tin Khách hàng & Hợp đồng</div>
+        <label>Mã Khách hàng (Mã danh bạ tỉnh):</label>
+        <input id="meterCustCode" type="text" placeholder="VD: KH-024810">
+
+        <label style="margin-top:8px;">Tên KH lắp đặt ban đầu:</label>
         <input id="meterCustName" type="text" placeholder="VD: Huỳnh Văn Khen">
+
+        <label style="margin-top:8px;">Tên KH chuyển đổi (nếu có):</label>
+        <input id="meterCustNameTransfer" type="text" placeholder="Tên khách hàng sang tên, thừa kế...">
 
         <div style="display:flex; gap:8px; margin-top:8px;">
           <div style="flex:1;">
-            <label style="font-size:12px; font-weight:600;">Số điện thoại:</label>
-            <input id="meterCustPhone" type="tel" placeholder="09xxxxxxx" style="height:42px;">
+            <label>Số điện thoại:</label>
+            <input id="meterCustPhone" type="tel" placeholder="09xxxxxxx">
           </div>
           <div style="flex:1;">
-            <label style="font-size:12px; font-weight:600;">Cỡ đồng hồ / Ống:</label>
-            <select id="meterPipeSize" class="form-select" style="height:42px; font-size:13px;">
-              <option value="D15_D21" selected>ĐH D15 - Nhánh D21</option>
-              <option value="D20_D27">ĐH D20 - Nhánh D27</option>
-              <option value="D25_D34">ĐH D25 - Nhánh D34</option>
-              <option value="KHAC">Cỡ khác...</option>
+            <label>Số hợp đồng:</label>
+            <input id="meterContractNum" type="text" placeholder="VD: HĐ-2026/012">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Ngày ký HĐ:</label>
+            <input id="meterContractDate" type="date">
+          </div>
+          <div style="flex:1;">
+            <label>Phí BVMT:</label>
+            <select id="meterEnvFee" class="form-select">
+              <option value="Có thu" selected>Có thu</option>
+              <option value="Miễn thu">Miễn thu</option>
             </select>
           </div>
         </div>
 
-        <label style="font-weight:700; color:#0f172a; margin-top:8px;">3. Địa chỉ hộ dân (Ấp / Khóm):</label>
+        <label style="margin-top:8px;">Địa chỉ chi tiết:</label>
         <input id="meterAddress" type="text" placeholder="VD: Ấp Tích Phước, Xã Thới Hòa">
-
-        <label style="font-weight:700; color:#0f172a; margin-top:8px;">4. Ghi chú hiện trạng đồng hồ:</label>
-        <input id="meterNote" type="text" placeholder="VD: Đồng hồ mờ số, đặt âm đất, có van khóa...">
       </div>
 
-      <!-- Tọa độ định vị đồng hồ -->
+      <!-- 3. QUẢN LÝ SERI & KIỂM ĐỊNH ĐỒNG HỒ -->
+      <div class="card-section" style="margin-bottom:12px;">
+        <div class="card-title">⏱️ Thông số Thiết bị & Kiểm định Kỳ hạn</div>
+        
+        <div style="display:flex; gap:8px;">
+          <div style="flex:1;">
+            <label>Đường kính ĐH:</label>
+            <select id="meterPipeSize" class="form-select">
+              <option value="D15" selected>D15 (1/2")</option>
+              <option value="D20">D20 (3/4")</option>
+              <option value="D25">D25 (1")</option>
+              <option value="D40_TRO_LEN">D40 trở lên</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label>Trạng thái đồng hồ:</label>
+            <select id="meterStatus" class="form-select">
+              <option value="Đang sử dụng" selected>Đang sử dụng</option>
+              <option value="Tạm khóa van">Tạm khóa van</option>
+              <option value="Đã hủy hợp đồng">Đã hủy HĐ</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Loại ĐH ban đầu:</label>
+            <input id="meterModelInitial" type="text" placeholder="VD: Kent, Asahi...">
+          </div>
+          <div style="flex:1;">
+            <label>Số Seri ban đầu:</label>
+            <input id="meterSerialInitial" type="text" placeholder="Số seri trên mặt ĐH">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Số Seri chuyển đổi:</label>
+            <input id="meterSerialTransfer" type="text" placeholder="Seri đổi mới (nếu có)">
+          </div>
+          <div style="flex:1;">
+            <label>Số Seri thay thế quá hạn:</label>
+            <input id="meterSerialExpired" type="text" placeholder="Seri thay thế định kỳ">
+          </div>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <div style="flex:1;">
+            <label>Ngày KĐ lắp đặt:</label>
+            <input id="meterInspectInstallDate" type="date">
+          </div>
+          <div style="flex:1;">
+            <label>Ngày KĐ thay thế:</label>
+            <input id="meterInspectReplaceDate" type="date">
+          </div>
+        </div>
+
+        <label style="margin-top:8px;">Ghi chú hiện trường:</label>
+        <input id="meterNote" type="text" placeholder="Vị trí đặt đồng hồ, âm đất, sự cố...">
+      </div>
+
+      <!-- Tọa độ GNSS & Chụp ảnh -->
       <div class="status-card">
         <div class="status-row">
           <span>Tọa độ VN-2000 Đồng hồ</span>
@@ -543,30 +724,27 @@
       </div>
 
       <button id="btnGetMeterGPS" class="btn-secondary" style="width:100%; height:46px; margin: 10px 0;">
-        <span id="btnMeterGPSText">◎ Lấy vị trí đồng hồ (Smart GNSS)</span>
+        <span id="btnMeterGPSText">◎ Lấy vị trí đồng hồ (Smart GNSS 20 Mẫu)</span>
       </button>
 
-      <!-- Chụp ảnh hiện trường đồng hồ -->
       <div class="card-section" style="margin-bottom:12px;">
-        <label style="font-weight:700; color:#0f172a; margin-bottom:8px; display:block;">📷 Ảnh đồng hồ & Hộp bảo vệ:</label>
+        <label style="font-weight:700; margin-bottom:8px; display:block;">📷 Ảnh chụp mặt số đồng hồ:</label>
         <div style="display:flex; gap:8px; align-items:center;">
-          <button id="btnSnapMeterPhoto" class="btn btn-outline" style="flex:1; height:44px; font-size:13px;">
-            📷 Chụp ảnh đồng hồ
-          </button>
+          <button id="btnSnapMeterPhoto" class="btn btn-outline" style="flex:1; height:44px;">📷 Chụp ảnh</button>
           <input type="file" id="inputMeterPhoto" accept="image/*" capture="environment" style="display:none;">
-          <span id="meterPhotoBadge" style="font-size:12px; color:#16a34a; font-weight:700;">Chưa có ảnh</span>
+          <span id="meterPhotoBadge" style="font-size:12px; color:#64748b; font-weight:700;">Chưa có ảnh</span>
         </div>
         <div id="meterPhotoPreviewBox" style="margin-top:8px; display:none;">
           <img id="meterPhotoImg" src="" style="width:100%; max-height:180px; object-fit:cover; border-radius:8px;">
         </div>
       </div>
 
-      <button id="btnSaveCustomerMeter" class="btn-primary" style="height:52px; width:100%; margin-top:6px; background:#6d28d9;">
+      <button id="btnSaveCustomerMeter" class="btn-primary" style="height:52px; width:100%; background:#6d28d9;">
         💾 Lưu hồ sơ khách hàng vào CSDL
       </button>
 
       <div style="margin-top:20px;">
-        <h3 style="font-size:15px; margin-bottom:10px;">Danh sách hộ đã đo (<span id="savedMetersCount">0</span>)</h3>
+        <h3 style="font-size:15px; margin-bottom:10px;">Danh sách hộ trên trạm (<span id="savedMetersCount">0</span>)</h3>
         <div id="savedMetersList" class="saved-points-list"></div>
       </div>
     </div>
