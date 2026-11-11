@@ -214,7 +214,6 @@ const TGS = (() => {
         ],
         
         show(screenId) {
-            // 1. Ẩn tất cả các màn hình
             this.screens.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
@@ -223,7 +222,6 @@ const TGS = (() => {
                 }
             });
 
-            // 2. Bật màn hình mục tiêu
             const target = document.getElementById(screenId);
             if (target) {
                 target.classList.add("active");
@@ -231,7 +229,6 @@ const TGS = (() => {
                 State.activeScreenId = screenId;
             }
 
-            // Ẩn thanh Bottom Bar khi vào các chế độ đo thực địa để bản đồ/form tràn viền 100%
             const bNav = document.getElementById("bottomNavBar");
             if (bNav) {
                 if (screenId === "screenLinear" || screenId === "screenPoint" || screenId === "screenCustomerMeter") {
@@ -241,7 +238,6 @@ const TGS = (() => {
                 }
             }
 
-            // 3. Đổi màu icon thanh Bottom Bar
             document.querySelectorAll(".nav-item").forEach(item => {
                 const tabTarget = item.getAttribute("data-tab");
                 if (tabTarget === screenId || (screenId === "screenSurveyHome" && tabTarget === "screenSurveyHome")) {
@@ -251,7 +247,6 @@ const TGS = (() => {
                 }
             });
 
-            // 4. Kích hoạt logic tương ứng bằng try...catch an toàn
             try {
                 if (screenId === "tab-dashboard") Lifecycle.updateDashboard();
             } catch (e) { console.warn("Lỗi Dashboard:", e); }
@@ -277,7 +272,6 @@ const TGS = (() => {
                 else LinearModule.stopTracking();
             } catch (e) { console.warn("Lỗi Linear:", e); }
 
-            // 5. Cuộn trang lên đỉnh
             window.scrollTo(0, 0);
         }
     };
@@ -296,28 +290,63 @@ const TGS = (() => {
             if (tEl) tEl.innerText = State.currentProject.name;
             if (sEl) sEl.innerText = `${State.currentProject.code} · ${State.currentProject.commune || "Vĩnh Long"}`;
 
+            this.populatePipelineOptions();
             this.resetForm();
             this.renderSavedMeters();
+        },
+
+        populatePipelineOptions() {
+            const selectEl = document.getElementById("meterPipeLineSelect");
+            if (!selectEl || !State.currentProject) return;
+            selectEl.innerHTML = "";
+
+            const recordedCodes = new Set();
+            (State.currentProject.points || []).forEach(pt => {
+                if (pt.pipelineCode) recordedCodes.add(pt.pipelineCode);
+            });
+
+            if (recordedCodes.size === 0) {
+                recordedCodes.add(`${State.currentProject.code}-TC01`);
+            }
+
+            recordedCodes.forEach(code => {
+                const opt = document.createElement("option");
+                opt.value = code;
+                opt.innerText = code.includes("-TN") 
+                    ? `Tuyến nhánh: ${code}` 
+                    : `Tuyến chính: ${code}`;
+                selectEl.appendChild(opt);
+            });
         },
 
         resetForm() {
             this.observedGNSS = null;
             this.capturedPhoto = null;
-            const cCode = document.getElementById("meterCustCode");
-            const cName = document.getElementById("meterCustName");
-            const cPhone = document.getElementById("meterCustPhone");
-            const cAddr = document.getElementById("meterAddress");
-            const cNote = document.getElementById("meterNote");
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            };
+
+            setVal("meterCustCode", "");
+            setVal("meterCustName", "");
+            setVal("meterCustNameTransfer", "");
+            setVal("meterCustPhone", "");
+            setVal("meterContractNum", "");
+            setVal("meterContractDate", "");
+            setVal("meterAddress", State.currentProject?.hamlet || "");
+            setVal("meterModelInitial", "");
+            setVal("meterSerialInitial", "");
+            setVal("meterSerialTransfer", "");
+            setVal("meterSerialExpired", "");
+            setVal("meterInspectInstallDate", "");
+            setVal("meterInspectReplaceDate", "");
+            setVal("meterNote", "");
+
             const vnEl = document.getElementById("meterVN2000Text");
             const accEl = document.getElementById("meterAccuracyText");
             const badge = document.getElementById("meterPhotoBadge");
             const box = document.getElementById("meterPhotoPreviewBox");
 
-            if (cCode) cCode.value = "";
-            if (cName) cName.value = "";
-            if (cPhone) cPhone.value = "";
-            if (cAddr) cAddr.value = State.currentProject?.hamlet || "";
-            if (cNote) cNote.value = "";
             if (vnEl) vnEl.innerText = "Chưa thu nhận";
             if (accEl) accEl.innerText = "± -- m";
             if (badge) { badge.innerText = "Chưa có ảnh"; badge.style.color = "#64748b"; }
@@ -329,7 +358,7 @@ const TGS = (() => {
             SmartGNSS.collect20Samples(
                 (cur, target) => { if (btnText) btnText.innerText = `⏳ Đang gom GNSS (${cur}/${target})...`; },
                 (evaluated) => {
-                    if (btnText) btnText.innerText = "◎ Lấy vị trí đồng hồ (Smart GNSS)";
+                    if (btnText) btnText.innerText = "◎ Lấy vị trí đồng hồ (Smart GNSS 20 Mẫu)";
                     CustomerMeterModule.observedGNSS = evaluated;
                     const vnEl = document.getElementById("meterVN2000Text");
                     const accEl = document.getElementById("meterAccuracyText");
@@ -359,7 +388,7 @@ const TGS = (() => {
 
             const meterRecord = {
                 id: Date.now().toString(),
-                pipeLineCode: getVal("meterPipeLineSelect"), // KHÓA NGOẠI LIÊN KẾT TUYẾN ỐNG
+                pipeLineCode: getVal("meterPipeLineSelect") || `${State.currentProject.code}-TC01`,
                 custCode: getVal("meterCustCode") || `KH-${Date.now().toString().slice(-6)}`,
                 custName: custName,
                 custNameTransfer: getVal("meterCustNameTransfer"),
@@ -420,7 +449,7 @@ const TGS = (() => {
                 div.innerHTML = `
                     <div>
                         <strong style="font-size:13px; color:#0f172a;">${idx + 1}. ${m.custName} (${m.custCode})</strong>
-                        <div style="font-size:11.5px; color:#64748b;">${m.address} · VN2000: X:${m.coordinates.vn2000.x} Y:${m.coordinates.vn2000.y}</div>
+                        <div style="font-size:11.5px; color:#64748b;">Tuyến: <b style="color:#0284c7;">${m.pipeLineCode}</b> · VN2000: X:${m.coordinates.vn2000.x} Y:${m.coordinates.vn2000.y}</div>
                     </div>
                     <span style="color:#16a34a; font-weight:bold;">✓</span>
                 `;
@@ -508,7 +537,6 @@ const TGS = (() => {
                 hamlet: getVal("projectHamlet") || "Chưa xác định",
                 location: getVal("projectLocation") || `${getVal("projectHamlet")}, ${getVal("projectCommune")}`,
                 
-                // Thuộc tính GIS chuyên ngành nước sạch
                 capacity_m3_day: Number(getVal("projectCapacity")) || 0,
                 operationYear: Number(getVal("projectYear")) || new Date().getFullYear(),
                 upgradeDate: getVal("projectUpgradeDate") || "",
@@ -521,12 +549,11 @@ const TGS = (() => {
                 cleanWaterMeter: Number(getVal("projectCleanMeter")) || 0,
                 manager: getVal("projectManager") || "Chưa phân công",
                 
-                // Mảng dữ liệu không gian
                 centralMeridian: 105.5,
-                pipelines: [],          // Danh sách các tuyến ống (LineString)
-                points: [],             // Mốc kỹ thuật trên tuyến (Tê, Co, Van)
-                pointFeatures: [],      // Cấu kiện bên trong khuôn viên trạm
-                customerMeters: [],     // Hồ sơ đồng hồ khách hàng
+                pipelines: [],
+                points: [],
+                pointFeatures: [],
+                customerMeters: [],
                 
                 createdAt: Date.now(),
                 updatedAt: Date.now(),
@@ -639,6 +666,14 @@ const TGS = (() => {
         markerLayer: null,
         totalLength: 0,
 
+        getActivePipelineCode() {
+            const tierEl = document.getElementById("lineTierType");
+            const numEl = document.getElementById("lineNumberInput");
+            const tier = (tierEl && tierEl.value === "TUYEN_NHANH") ? "TN" : "TC";
+            const num = numEl ? numEl.value.trim().padStart(2, "0") : "01";
+            return `${State.currentProject ? State.currentProject.code : 'TGS'}-${tier}${num}`;
+        },
+
         initMap() {
             if (this.map) return;
             const container = document.getElementById("map");
@@ -728,9 +763,11 @@ const TGS = (() => {
 
                     const fittingType = document.getElementById("lineFittingSelect").value;
                     const fittingNote = document.getElementById("lineFittingNote").value.trim();
+                    const activePipeCode = LinearModule.getActivePipelineCode();
 
                     const milestone = {
                         id: Date.now().toString(),
+                        pipelineCode: activePipeCode,
                         lat: evaluated.latitude,
                         lng: evaluated.longitude,
                         accuracy: evaluated.accuracy,
@@ -755,6 +792,7 @@ const TGS = (() => {
                             radius: 8, fillColor: markerColor, color: "#ffffff", weight: 2, fillOpacity: 1
                         }).bindPopup(`
                             <b>Mốc #${State.currentProject.points.length} (${milestone.meterMark}m)</b><br>
+                            Tuyến: <b>${activePipeCode}</b><br>
                             ${milestone.fitting.detail !== "Không phụ kiện" ? `🔧 <b>Phụ kiện:</b> ${milestone.fitting.detail}<br>` : ''}
                             Trái: <b>${leftPipe}</b> | Phải: <b>${rightPipe}</b><br>
                             VN2000: X:${evaluated.vn2000.x} Y:${evaluated.vn2000.y}
@@ -765,7 +803,7 @@ const TGS = (() => {
                     document.getElementById("lineFittingNote").value = "";
 
                     if (navigator.vibrate) navigator.vibrate(150);
-                    alert(`✓ Đã chốt mốc #${State.currentProject.points.length} tại mét thứ ${milestone.meterMark}!\n${milestone.fitting.detail !== "Không phụ kiện" ? `Phụ kiện: ${milestone.fitting.detail}\n` : ''}Trái: ${leftPipe} - Phải: ${rightPipe}`);
+                    alert(`✓ Đã chốt mốc #${State.currentProject.points.length} trên tuyến [${activePipeCode}] tại mét thứ ${milestone.meterMark}!`);
                 }
             );
         },
@@ -781,30 +819,6 @@ const TGS = (() => {
                   `${fittingNote ? `Phụ kiện: ${fittingNote}\n` : ''}` +
                   `Quy cách đoạn tiếp theo: Trái [${left}] - Phải [${right}]`);
         }
-       getActivePipelineCode() {
-            const tierEl = document.getElementById("lineTierType");
-            const numEl = document.getElementById("lineNumberInput");
-            const tier = (tierEl && tierEl.value === "TUYEN_NHANH") ? "TN" : "TC";
-            const num = numEl ? numEl.value.trim().padStart(2, "0") : "01";
-            return `${State.currentProject ? State.currentProject.code : 'TGS'}-${tier}${num}`;
-        },
-       const activePipeCode = LinearModule.getActivePipelineCode();
-                    const milestone = {
-                        id: Date.now().toString(),
-                        pipelineCode: activePipeCode,
-                        lat: evaluated.latitude,
-                        lng: evaluated.longitude,
-                        accuracy: evaluated.accuracy,
-                        vn2000: evaluated.vn2000,
-                        meterMark: Math.round(LinearModule.totalLength),
-                        leftPipe: leftPipe,
-                        rightPipe: rightPipe,
-                        fitting: {
-                            type: fittingType,
-                            detail: fittingNote || (fittingType !== "KHONG" ? fittingType : "Không phụ kiện")
-                        },
-                        timestamp: Date.now()
-                    };
     };
 
     /* =========================================================================
@@ -1092,7 +1106,6 @@ const TGS = (() => {
                         <button class="btn btn-sm ${isCur ? 'btn-primary' : 'btn-outline'}">Tác vụ</button>
                     `;
                     
-                    // KHI CLICK VÀO CÔNG TRÌNH: BẬT MODAL LỰA CHỌN TÁC VỤ
                     div.onclick = () => {
                         State.currentProject = p;
                         DataHub.openProjectActionsModal(p);
@@ -1114,19 +1127,16 @@ const TGS = (() => {
             if (sEl) sEl.innerText = `Mã: ${proj.code} · Địa bàn: ${proj.commune || "Vĩnh Long"}`;
             modal.style.display = "flex";
 
-            // Nút 1: Tiếp tục khảo sát bổ sung
             document.getElementById("btnActionContinueSurvey").onclick = () => {
                 modal.style.display = "none";
                 Lifecycle.enterSurveyHome();
             };
 
-            // Nút 2: Xuất file GeoJSON nạp tỉnh
             document.getElementById("btnActionExportGeo").onclick = () => {
                 modal.style.display = "none";
                 DataHub.exportGeoJSON();
             };
 
-            // Nút 3: Đóng
             document.getElementById("btnActionCloseModal").onclick = () => {
                 modal.style.display = "none";
                 DataHub.renderDataScreen();
@@ -1222,21 +1232,34 @@ const TGS = (() => {
                     "Ap_Khom": proj.hamlet || "",
                     "Cong_Suat_m3_ngd": proj.capacity_m3_day || 0,
                     "Nam_Van_Hanh": proj.operationYear || 2026,
+                    "Ngay_Nang_Cap": proj.upgradeDate || "",
+                    "Cong_Suat_Nang_Cap_m3_ngd": proj.upgradeCapacity || 0,
+                    "Cong_Nghe": proj.technology || "",
+                    "Thiet_Bi_Bom": proj.pumps || "",
+                    "Nguon_Nuoc": proj.waterSource || "",
+                    "Trang_Thai": proj.status || "Đang hoạt động",
+                    "Dong_Ho_Nuoc_Tho_m3": proj.rawWaterMeter || 0,
+                    "Dong_Ho_Nuoc_Sach_m3": proj.cleanWaterMeter || 0,
                     "Nhan_Vien_Quan_Ly": proj.manager || ""
                 }
             });
 
-            // LỚP 2: TUYẾN ỐNG (LINESTRING)
+            // LỚP 2: TUYẾN ỐNG (LINESTRING) VÀ TÍNH NĂNG TOPOLOGY LIÊN KẾT ĐỒNG HỒ
             const lineCoordinates = (proj.points || []).map(pt => [pt.lng, pt.lat]);
             if (lineCoordinates.length >= 2) {
+                const activeLineCode = proj.points[0]?.pipelineCode || `${proj.code}-TC01`;
+                const connectedMeters = (proj.customerMeters || []).filter(m => m.pipeLineCode === activeLineCode);
+
                 features.push({
                     "type": "Feature",
                     "geometry": { "type": "LineString", "coordinates": lineCoordinates },
                     "properties": {
                         "Loai_Doi_Tuong": "TUYEN_ONG",
-                        "Ma_Tuyen": `${proj.code}-LINE`,
+                        "Ma_Tuyen": activeLineCode,
                         "Ten_Tram": proj.name,
-                        "Tong_Chieu_Dai_m": Math.round(LinearModule.totalLength || 0)
+                        "Tong_Chieu_Dai_m": Math.round(LinearModule.totalLength || 0),
+                        "So_Luong_Dong_Ho_Dau_Noi": connectedMeters.length,
+                        "Danh_Sach_Ho_Dan": connectedMeters.map(m => `${m.custName} (${m.custCode})`).join("; ")
                     }
                 });
             }
@@ -1248,17 +1271,29 @@ const TGS = (() => {
                     "geometry": { "type": "Point", "coordinates": [m.coordinates.lng, m.coordinates.lat] },
                     "properties": {
                         "Loai_Doi_Tuong": "DONG_HO_KHACH_HANG",
+                        "Ma_Tuyen_Dau_Noi": m.pipeLineCode,
                         "Ma_Khach_Hang": m.custCode,
-                        "Ten_Khach_Hang": m.custName,
+                        "Ten_Khach_Hang_Lap_Dat": m.custName,
+                        "Ten_Khach_Hang_Chuyen_Doi": m.custNameTransfer || "",
                         "So_Dien_Thoai": m.phone,
-                        "Quy_Cach_Ong": m.pipeSize,
+                        "So_Hop_Dong": m.contractNum || "",
+                        "Ngay_Hop_Dong": m.contractDate || "",
+                        "Phi_BVMT": m.envFee || "Có thu",
                         "Dia_Chi": m.address,
+                        "Duong_Kinh_Dong_Ho": m.pipeSize,
+                        "Trang_Thai": m.status || "Đang sử dụng",
+                        "Loai_DH_Ban_Dau": m.modelInitial || "",
+                        "Seri_DH_Ban_Dau": m.serialInitial || "",
+                        "Seri_DH_Chuyen_Doi": m.serialTransfer || "",
+                        "Seri_DH_Thay_The": m.serialExpired || "",
+                        "Ngay_KD_Lap_Dat": m.inspectInstallDate || "",
+                        "Ngay_KD_Thay_The": m.inspectReplaceDate || "",
                         "Toa_Do_VN2000_X": m.coordinates.vn2000.x,
                         "Toa_Do_VN2000_Y": m.coordinates.vn2000.y,
                         "Ghi_Chu": m.note
                     }
                 });
-               });
+            });
 
             const geojsonDataset = {
                 "type": "FeatureCollection",
@@ -1292,27 +1327,6 @@ const TGS = (() => {
             link.click();
             alert("✓ Đã xuất tập dữ liệu JSON về máy!");
         }
-       // Tổng hợp và đếm đồng hồ theo từng tuyến
-            const lineCoordinates = (proj.points || []).map(pt => [pt.lng, pt.lat]);
-            if (lineCoordinates.length >= 2) {
-                const activeLineCode = proj.points[0]?.pipelineCode || `${proj.code}-TC01`;
-                
-                // ĐẾM SỐ LƯỢNG ĐỒNG HỒ ĐANG ĐẤU NỐI VÀO TUYẾN NÀY
-                const connectedMeters = (proj.customerMeters || []).filter(m => m.pipeLineCode === activeLineCode);
-
-                features.push({
-                    "type": "Feature",
-                    "geometry": { "type": "LineString", "coordinates": lineCoordinates },
-                    "properties": {
-                        "Loai_Doi_Tuong": "TUYEN_ONG",
-                        "Ma_Tuyen": activeLineCode,
-                        "Ten_Tram": proj.name,
-                        "Tong_Chieu_Dai_m": Math.round(LinearModule.totalLength || 0),
-                        "So_Luong_Dong_Ho_Dau_Noi": connectedMeters.length,
-                        "Danh_Sach_Ho_Dan": connectedMeters.map(m => `${m.custName} (${m.custCode})`).join("; ")
-                    }
-                });
-            }
     };
 
     /* =========================================================================
@@ -1321,22 +1335,26 @@ const TGS = (() => {
     function bindEvents() {
         const btnNew = document.getElementById("btnNewProject");
         if (btnNew) btnNew.onclick = async () => {
-            const pName = document.getElementById("projectName");
-            const pComm = document.getElementById("projectCommune");
-            const pHam = document.getElementById("projectHamlet");
-            const pLoc = document.getElementById("projectLocation");
-            const pCap = document.getElementById("projectCapacity");
-            const pYear = document.getElementById("projectYear");
-            const pMgr = document.getElementById("projectManager");
-            const pCode = document.getElementById("projectCode");
+            const setField = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            };
 
-            if (pName) pName.value = "";
-            if (pComm) pComm.value = "";
-            if (pHam) pHam.value = "";
-            if (pLoc) pLoc.value = "";
-            if (pCap) pCap.value = "";
-            if (pYear) pYear.value = new Date().getFullYear();
-            if (pMgr) pMgr.value = "";
+            setField("projectName", "");
+            setField("projectCommune", "");
+            setField("projectHamlet", "");
+            setField("projectLocation", "");
+            setField("projectCapacity", "");
+            setField("projectYear", new Date().getFullYear());
+            setField("projectUpgradeDate", "");
+            setField("projectUpgradeCapacity", "");
+            setField("projectTechnology", "");
+            setField("projectPumps", "");
+            setField("projectRawMeter", "");
+            setField("projectCleanMeter", "");
+            setField("projectManager", "");
+            
+            const pCode = document.getElementById("projectCode");
             if (pCode) pCode.value = await Lifecycle.generateNextCode();
             Navigation.show("screenProject");
         };
@@ -1374,7 +1392,6 @@ const TGS = (() => {
         const btnSwitchSec = document.getElementById("btnSwitchSection");
         if (btnSwitchSec) btnSwitchSec.onclick = () => LinearModule.switchPipeSection();
 
-        // Kích hoạt camera chụp ảnh & quay video trên tuyến
         const btnLineSnap = document.getElementById("btnLineSnapPhoto");
         const inLinePhoto = document.getElementById("inputLinePhoto");
         if (btnLineSnap && inLinePhoto) {
@@ -1475,7 +1492,6 @@ const TGS = (() => {
         const btnSyncM = document.getElementById("btnSyncMaster");
         if (btnSyncM) btnSyncM.onclick = () => DataHub.executeMasterSync();
 
-        // Nút mở form khảo sát đồng hồ từ Survey Home
         const btnCustMeter = document.getElementById("btnCustomerMeterSurvey");
         if (btnCustMeter) btnCustMeter.onclick = () => {
             Navigation.show("screenCustomerMeter");
@@ -1491,7 +1507,6 @@ const TGS = (() => {
         const btnSaveM = document.getElementById("btnSaveCustomerMeter");
         if (btnSaveM) btnSaveM.onclick = () => CustomerMeterModule.saveMeter();
 
-        // Xử lý chụp ảnh đồng hồ
         const btnSnapM = document.getElementById("btnSnapMeterPhoto");
         const inSnapM = document.getElementById("inputMeterPhoto");
         if (btnSnapM && inSnapM) {
@@ -1541,32 +1556,8 @@ const TGS = (() => {
             Navigation.show("tab-dashboard");
         },
         Navigation: Navigation,
-        DataHub: DataHub // ĐÃ XUẤT RA NGOÀI ĐỂ NÚT BẤM ONCLICK GỌI CHÍNH XÁC
+        DataHub: DataHub
     };
-populatePipelineOptions() {
-            const selectEl = document.getElementById("meterPipeLineSelect");
-            if (!selectEl || !State.currentProject) return;
-            selectEl.innerHTML = "";
-
-            // Lấy danh sách các tuyến ống đã xuất hiện trong dự án
-            const recordedCodes = new Set();
-            (State.currentProject.points || []).forEach(pt => {
-                if (pt.pipelineCode) recordedCodes.add(pt.pipelineCode);
-            });
-
-            if (recordedCodes.size === 0) {
-                recordedCodes.add(`${State.currentProject.code}-TC01`);
-            }
-
-            recordedCodes.forEach(code => {
-                const opt = document.createElement("option");
-                opt.value = code;
-                opt.innerText = code.includes("-TN") 
-                    ? `Tuyến nhánh: ${code}` 
-                    : `Tuyến chính: ${code}`;
-                selectEl.appendChild(opt);
-            });
-        },
 })();
 
 /* =========================================================================
